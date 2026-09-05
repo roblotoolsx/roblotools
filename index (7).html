@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RobloTools — Roblox Executor</title>
+  <style>
+    /* ----- RESET & VARIABLES ----- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #0a0618;
+      --panel: #160f2b;
+      --panel-line: rgba(167, 139, 250, 0.13);
+      --violet: #8B5CF6;
+      --violet-2: #6D28D9;
+      --green: #4ADE80;
+      --green-dim: #2FAE63;
+      --text: #f0ecff;
+      --text-dim: #a89bc9;
+      --radius: 14px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-image:
+        radial-gradient(700px 500px at 80% 0%, rgba(139, 92, 246, 0.18), transparent 65%),
+        radial-gradient(500px 400px at 10% 100%, rgba(74, 222, 128, 0.07), transparent 60%);
+      min-height: 100vh;
+    }
+
+    /* subtle noise overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .wrap {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 28px;
+      position: relative;
+      z-index: 2;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* ----- NAV ----- */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(14px);
+      background: rgba(10, 6, 24, 0.78);
+      border-bottom: 1px solid var(--panel-line);
+    }
+
+    nav .wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 68px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: -0.3px;
+    }
+
+    .logo-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(145deg, var(--green), var(--violet));
+      box-shadow: 0 0 24px rgba(74, 222, 128, 0.30);
+      position: relative;
+      animation: pulse-glow 3.2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 24px rgba(74, 222, 128, 0.30); }
+      50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.50); }
+    }
+
+    .logo-mark::after {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      background: var(--bg);
+      border-radius: 4px;
+    }
+
+    .nav-cta {
+      background: var(--green);
+      color: #0b1a12;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 10px 22px;
+      border-radius: 10px;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .nav-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(74, 222, 128, 0.35);
+    }
+
+    /* ----- HERO ----- */
+    .hero {
+      padding: 80px 0 50px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .hero-text {
+      padding-right: 20px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--green);
+      background: rgba(74, 222, 128, 0.08);
+      border: 1px solid rgba(74, 222, 128, 0.25);
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 10px var(--green);
+    }
+
+    .hero h1 {
+      font-size: 50px;
+      line-height: 1.05;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .hero h1 .accent {
+      background: linear-gradient(110deg, var(--green) 15%, var(--violet) 85%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero p.sub {
+      margin-top: 18px;
+      font-size: 17px;
+      line-height: 1.6;
+      color: var(--text-dim);
+      max-width: 480px;
+    }
+
+    .hero-actions {
+      margin-top: 34px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(120deg, var(--green), var(--green-dim));
+      color: #0b1a12;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 15px 28px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 8px 28px rgba(74, 222, 128, 0.30);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .btn-download:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 38px rgba(74, 222, 128, 0.45);
+    }
+
+    .btn-download svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .btn-secondary {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-dim);
+      border: 1px solid var(--panel-line);
+      padding: 14px 22px;
+      border-radius: 12px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--violet);
+      color: var(--text);
+    }
+
+    .hero-meta {
+      margin-top: 24px;
+      font-size: 13px;
+      color: var(--text-dim);
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .hero-meta span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hero-meta b {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* ----- VOXEL AVATAR (injector vibe) ----- */
+    .avatar-stage {
+      position: relative;
+      height: 380px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .avatar-glow {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.35), transparent 70%);
+      filter: blur(14px);
+    }
+
+    .voxel {
+      position: relative;
+      width: 200px;
+      height: 280px;
+      transform-style: preserve-3d;
+      transform: rotateX(10deg) rotateY(-26deg);
+      animation: float 5.5s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: rotateX(10deg) rotateY(-26deg) translateY(0); }
+      50% { transform: rotateX(10deg) rotateY(-20deg) translateY(-16px); }
+    }
+
+    .block {
+      position: absolute;
+      border-radius: 3px;
+    }
+
+    .block .front, .block .top, .block .side {
+      position: absolute;
+      border-radius: 3px;
+    }
+
+    .block .front { inset: 0; }
+    .block .top { height: 14px; left: 0; right: 0; top: -12px; transform: skewX(-45deg); transform-origin: bottom left; }
+    .block .side { width: 12px; top: 0; bottom: 0; right: -11px; transform: skewY(-45deg); transform-origin: top left; }
+
+    /* head */
+    .b-head { width: 72px; height: 60px; top: 0; left: 64px; }
+    .b-head .front { background: var(--green); }
+    .b-head .top { background: #7CF0A6; }
+    .b-head .side { background: var(--green-dim); }
+
+    /* torso */
+    .b-torso { width: 92px; height: 92px; top: 60px; left: 54px; }
+    .b-torso .front { background: var(--violet); }
+    .b-torso .top { background: #a985f7; }
+    .b-torso .side { background: var(--violet-2); }
+
+    /* arms */
+    .b-armL, .b-armR { width: 32px; height: 92px; top: 60px; }
+    .b-armL { left: 18px; }
+    .b-armR { left: 150px; }
+    .b-armL .front, .b-armR .front { background: #6D28D9; }
+    .b-armL .top, .b-armR .top { background: #9161ED; }
+    .b-armL .side, .b-armR .side { background: #521EAA; }
+
+    /* legs */
+    .b-legL, .b-legR { width: 38px; height: 88px; top: 152px; }
+    .b-legL { left: 56px; }
+    .b-legR { left: 106px; }
+    .b-legL .front, .b-legR .front { background: #2A1750; }
+    .b-legL .top, .b-legR .top { background: #3D2270; }
+    .b-legL .side, .b-legR .side { background: #1C0F38; }
+
+    .avatar-caption {
+      position: absolute;
+      bottom: 0;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    /* ----- FEATURES (injector‑specific) ----- */
+    .section {
+      padding: 80px 0;
+    }
+
+    .section-head {
+      max-width: 600px;
+      margin-bottom: 48px;
+    }
+
+    .section-tag {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--violet);
+      margin-bottom: 10px;
+    }
+
+    .section-head h2 {
+      font-size: 34px;
+      line-height: 1.15;
+      letter-spacing: -0.01em;
+    }
+
+    .section-head p {
+      margin-top: 12px;
+      color: var(--text-dim);
+      font-size: 15.5px;
+      line-height: 1.6;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--panel-line);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      border-color: rgba(74, 222, 128, 0.40);
+      transform: translateY(-5px);
+      box-shadow: 0 18px 44px rgba(74, 222, 128, 0.08), inset 0 0 0 1px rgba(74, 222, 128, 0.06);
+    }
+
+    .card-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(145deg, rgba(74, 222, 128, 0.12), rgba(139, 92, 246, 0.12));
+      border: 1px solid var(--panel-line);
+      margin-bottom: 18px;
+    }
+
+    .card-icon svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .card h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* ----- STEPS (installation) ----- */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .step {
+      padding: 24px 20px;
+      border-left: 2px solid var(--panel-line);
+    }
+
+    .step .num {
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--green);
+      background: rgba(74, 222, 128, 0.10);
+      border: 1px solid rgba(74, 222, 128, 0.25);
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+
+    .step h3 {
+      font-size: 17px;
+      margin-bottom: 6px;
+    }
+
+    .step p {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* ----- CTA BANNER ----- */
+    .cta-banner {
+      border-radius: 24px;
+      padding: 52px 44px;
+      background: linear-gradient(130deg, rgba(139, 92, 246, 0.16), rgba(74, 222, 128, 0.08));
+      border: 1px solid var(--panel-line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .cta-banner h2 {
+      font-size: 28px;
+      max-width: 380px;
+    }
+
+    .cta-banner p {
+      color: var(--text-dim);
+      margin-top: 8px;
+      font-size: 14.5px;
+      max-width: 400px;
+    }
+
+    /* ----- FOOTER ----- */
+    footer {
+      border-top: 1px solid var(--panel-line);
+      padding: 36px 0;
+    }
+
+    footer .wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+
+    footer .copy {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    /* ----- RESPONSIVE ----- */
+    @media (max-width: 860px) {
+      .hero {
+        grid-template-columns: 1fr;
+        padding-top: 40px;
+      }
+
+      .hero h1 {
+        font-size: 36px;
+      }
+
+      .hero-text {
+        padding-right: 0;
+        order: 2;
+      }
+
+      .avatar-stage {
+        height: 280px;
+        order: 1;
+      }
+
+      .grid-3, .steps {
+        grid-template-columns: 1fr;
+      }
+
+      .cta-banner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== NAV ===== -->
+  <nav>
+    <div class="wrap">
+      <div class="logo">
+        <div class="logo-mark"></div>
+        RobloTools
+      </div>
+      <a href="#download" class="nav-cta">Download</a>
+    </div>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <header class="hero wrap">
+    <div class="hero-text">
+      <div class="eyebrow">
+        <span class="dot"></span> v2.6 · Windows 10/11
+      </div>
+      <h1>
+        <span class="accent">Execute</span> any script<br />in Roblox
+      </h1>
+      <p class="sub">
+        Powerful, stable injector for Roblox PC. Supports Synapse X, Krnl, Script‑Ware
+        and custom Lua execution. Bypass detection &amp; run scripts with ease.
+      </p>
+      <div class="hero-actions">
+        <a href="#" class="btn-download" id="downloadLink" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v13" /><path d="M6 11l6 6 6-6" /><path d="M5 21h14" />
+          </svg>
+          Download Injector
+        </a>
+        <a href="#how" class="btn-secondary">How to use →</a>
+      </div>
+      <div class="hero-meta">
+        <span><b>111 MB</b> size</span>
+        <span><b>Win 10/11</b></span>
+        <span><b>Free</b></span>
+        <span><b>🔒 Undetected</b></span>
+      </div>
+    </div>
+
+    <div class="avatar-stage">
+      <div class="avatar-glow"></div>
+      <div class="voxel">
+        <div class="block b-head"><div class="front"></div><div class="top"></div><div class="side"></div></div>
+        <div class="block b-torso"><div class="front"></div><div class="top"></div><div class="side"></div></div>
+        <div class="block b-armL"><div class="front"></div><div class="top"></div><div class="side"></div></div>
+        <div class="block b-armR"><div class="front"></div><div class="top"></div><div class="side"></div></div>
+        <div class="block b-legL"><div class="front"></div><div class="top"></div><div class="side"></div></div>
+        <div class="block b-legR"><div class="front"></div><div class="top"></div><div class="side"></div></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== FEATURES ===== -->
+  <section class="section" id="features">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="section-tag">Features</div>
+        <h2>Built for scripters</h2>
+        <p>Everything you need to run, debug and protect your Roblox scripts.</p>
+      </div>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
+            </svg>
+          </div>
+          <h3>Multi‑Executor support</h3>
+          <p>Works with Synapse X, Krnl, Script‑Ware and custom DLL injectors. Switch between engines on the fly.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#A985F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" />
+            </svg>
+          </div>
+          <h3>Real‑time script debug</h3>
+          <p>Built‑in console with error tracing, variable watcher and auto‑complete for fast scripting.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16v16H4z" /><path d="M9 9h6v6H9z" />
+            </svg>
+          </div>
+          <h3>Anti‑ban protection</h3>
+          <p>Advanced obfuscation and memory spoofing to keep your account safe from detection.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== HOW TO INSTALL ===== -->
+  <section class="section" id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="section-tag">Installation</div>
+        <h2>Get started in 3 steps</h2>
+        <p>Simple setup — inject and run your scripts within seconds.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="num">1</div>
+          <h3>Download the injector</h3>
+          <p>Click the <strong>Download</strong> button above to get the latest version.</p>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <h3>Run as Administrator</h3>
+          <p>Right‑click the file and select "Run as administrator" — required for injection.</p>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <h3>Launch Roblox &amp; inject</h3>
+          <p>Open any Roblox game, press the inject button and start executing scripts.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CTA DOWNLOAD ===== -->
+  <section class="section" id="download">
+    <div class="wrap">
+      <div class="cta-banner">
+        <div>
+          <h2>Ready to inject?</h2>
+          <p>Download the latest version — completely free, no hidden paywalls.</p>
+        </div>
+        <a href="#" class="btn-download" id="downloadLinkCta" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v13" /><path d="M6 11l6 6 6-6" /><path d="M5 21h14" />
+          </svg>
+          Download installer
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <div class="wrap">
+      <div class="copy">© 2026 RobloTools. Not affiliated with Roblox Corporation. For educational purposes only.</div>
+    </div>
+  </footer>
+
+  <script>
+    // === REPLACE WITH YOUR REAL MEDIAFIRE / DIRECT DOWNLOAD LINK ===
+    const downloadUrl = "https://download1650.mediafire.com/yg8quq140sugqZlOU2wdF_G0JFmFffn1PEK3fhZJJO97WyRAvjuLcOvLtrDizCyoLFJRWt92NSeqgZ5hlvdiUTvihgZtjXa0BarxitRuq9QJ8m7dNuqKK1fNwuTu0VapV1b7_b7bOnWrQPY8qv0hWYRfL_LTcDAj49q3F2bN_t4_1XR-/ansg9g08sgwg2o2/installer-2.6.0.exe";
+
+    document.getElementById('downloadLink').href = downloadUrl;
+    document.getElementById('downloadLinkCta').href = downloadUrl;
+  </script>
+
+</body>
+</html>
